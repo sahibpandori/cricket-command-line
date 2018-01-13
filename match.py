@@ -14,6 +14,7 @@ class Match:
         Constructs a Match object given an XML format of the object
         :param match: the XML format for the match object
         """
+        self.id = match.attrib['id']
         self.series = match.attrib['srs']
         self.match_desc = match.attrib['mchDesc']
         self.match_num = match.attrib['mnum']
@@ -95,7 +96,13 @@ class Match:
                 score_summary += str(inning)
         else:
             score_summary += "Match has not started yet..."
-        score_summary += "\txz(Last updated at {hr}:{min}:{sec})\n".format(hr=dt.hour, min=dt.minute, sec=dt.second)
+
+        def pad_0(x):
+            return str(x) if x > 10 else '0'+str(x)
+
+        score_summary += "(Last updated at {hr}:{min}:{sec})\n".format(hr=pad_0(dt.hour),
+                                                                       min=pad_0(dt.minute),
+                                                                       sec=pad_0(dt.second))
         return score_summary
 
     def render_score_summary(self, win):
@@ -113,6 +120,21 @@ class Match:
         :return: 'ODI' or 'Test' depending on the class to which this object belongs
         """
         return self.type
+
+    def get_id(self):
+        return self.id
+
+    def get_header(self):
+        return self.teams[0] + ' vs. ' + self.teams[1]
+
+    @staticmethod
+    def get_instance(match):
+        if match.attrib['type'] == 'TEST':
+            return TestMatch(match)
+        elif match.attrib['type'] == 'ODI':
+            return ODIMatch(match)
+        else:
+            return None
 
     def __str__(self):
         return self.get_score_summary()
