@@ -5,7 +5,6 @@ import requests
 import curses
 import time
 
-
 live_matches_url = 'http://synd.cricbuzz.com/j2me/1.0/livematches.xml'
 
 

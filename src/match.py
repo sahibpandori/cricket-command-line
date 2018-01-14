@@ -99,7 +99,7 @@ class Match:
             score_summary += "Match has not started yet..."
 
         def pad_0(x):
-            return str(x) if x > 10 else '0'+str(x)
+            return str(x) if x >= 10 else '0'+str(x)
 
         score_summary += "\n(Last updated at {hr}:{min}:{sec})\n".format(hr=pad_0(dt.hour),
                                                                          min=pad_0(dt.minute),
