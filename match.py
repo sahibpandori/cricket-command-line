@@ -7,6 +7,7 @@ class Match:
     """
     Abstract Match class from which ODIs and Tests will be derived
     """
+
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, match):
@@ -100,35 +101,35 @@ class Match:
         def pad_0(x):
             return str(x) if x > 10 else '0'+str(x)
 
-        score_summary += "(Last updated at {hr}:{min}:{sec})\n".format(hr=pad_0(dt.hour),
-                                                                       min=pad_0(dt.minute),
-                                                                       sec=pad_0(dt.second))
+        score_summary += "\n(Last updated at {hr}:{min}:{sec})\n".format(hr=pad_0(dt.hour),
+                                                                         min=pad_0(dt.minute),
+                                                                         sec=pad_0(dt.second))
         return score_summary
 
     def render_score_summary(self, win):
         """
         Render the score summary and update it at each update interval
+        :param: The window to render the score in
         """
         if win is None:
             raise ValueError('No window provided to render the score summary')
         win.addstr(0, 0, self.get_score_summary())
+        win.addstr("\nPress 'q' to Quit")
         win.refresh()
 
-    def get_match_type(self):
-        """
-        Get the type of match being stored
-        :return: 'ODI' or 'Test' depending on the class to which this object belongs
-        """
-        return self.type
-
-    def get_id(self):
-        return self.id
-
     def get_header(self):
+        """
+        :return: The title of the match
+        """
         return self.teams[0] + ' vs. ' + self.teams[1]
 
     @staticmethod
     def get_instance(match):
+        """
+        Factory method to get the relevant match object
+        :param match: XML form of the match
+        :return: An instance of the relevant match class
+        """
         if match.attrib['type'] == 'TEST':
             return TestMatch(match)
         elif match.attrib['type'] == 'ODI':

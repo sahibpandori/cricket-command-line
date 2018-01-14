@@ -14,7 +14,7 @@ class Inning:
         self.desc = attr['desc']
 
     def __str__(self):
-        header = "{batting_team:<30}\t\t{runs:>4}/{wkts:<2}{decl:<1}\t{overs:>5} overs\n".format(
+        header = "{batting_team:<10}\t\t{runs:>4}/{wkts:<2}{decl:<1}\t{overs:>5} overs\n".format(
             batting_team=self.batting_team,
             runs=self.runs,
             wkts=self.wickets,

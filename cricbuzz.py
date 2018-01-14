@@ -2,16 +2,11 @@ from xml.etree import ElementTree
 import requests
 import time
 import curses
-from match import TestMatch, ODIMatch, Match
+from threading import Thread
+from match import Match
 
 
 live_matches_url = 'http://synd.cricbuzz.com/j2me/1.0/livematches.xml'
-ODI_NUM_OVERS_PER_INNINGS = 50
-ODI_NUM_INNINGS = 2
-TEST_MAX_NUM_DAYS = 5
-TEST_MAX_NUM_OVERS_PER_DAY = 90
-TEST_MAX_NUM_INNINGS = 4
-SCORE_UPDATE_INTERVAL_IN_SECONDS = 15
 
 
 def display_choices(matches):
@@ -33,10 +28,25 @@ def get_selected_match_id():
                 matches.append(m)
     display_choices(matches)
     idx = int(input("Enter your choice: ")) - 1
-    return matches[idx].get_id()
+    return matches[idx].id
+
+
+def update_score(win, match_id, update_interval):
+    while True:
+        # Get the current live score in XML form
+        response = requests.get(url=live_matches_url)
+        root = ElementTree.fromstring(response.content)
+        # Render the score summary for the selected match
+        for match in root:
+            if match.tag == 'match' and match.attrib['id'] == match_id:
+                m = Match.get_instance(match)
+                m.render_score_summary(win)
+        time.sleep(update_interval)
 
 
 def main():
+    score_update_interval_sec = 15
+
     # Get the match to be followed
     match_id = get_selected_match_id()
 
@@ -49,15 +59,17 @@ def main():
     try:
         # Create a new window to display the score
         win = curses.newwin(20, 75, 0, 0)
-        # Display the score until user exits
-        while True:
-            response = requests.get(url=live_matches_url)
-            root = ElementTree.fromstring(response.content)
-            for match in root:
-                if match.tag == 'match' and match.attrib['id'] == match_id:
-                    m = Match.get_instance(match)
-                    m.render_score_summary(win)
-            time.sleep(SCORE_UPDATE_INTERVAL_IN_SECONDS)
+
+        # Create a thread to periodically update scores
+        score_updater = Thread(target=update_score, args=(win, match_id, score_update_interval_sec))
+        score_updater.daemon = True
+        score_updater.start()
+
+        key = ''
+        # Wait for the user to quit
+        while key != ord('q'):
+            key = win.getch()
+
     except KeyboardInterrupt:
         pass
     except ValueError:
